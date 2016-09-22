@@ -1,0 +1,125 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../../bower_components/paper-styles/typography.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="war-app">
+    <template>
+        <style>
+            * {
+                font-family: 'Roboto', 'Noto', sans-serif;
+            }
+            google-map {
+                height: calc(100% - 30px);
+                width: 100%;
+            }
+            .bar {
+                height: 30px;
+                width: 100%;
+                display: flex;
+            }
+            .red {
+                height: 100%;
+                background-color: red;
+                color: white;
+                font-weight: 500;
+                padding: 5px;
+                text-align: center;
+            }
+            .blue {
+                height: 100%;
+                background-color: blue;
+                color: white;
+                font-weight: 500;
+                padding: 5px;
+                text-align: center;
+            }
+        </style>
+        <div class="bar" hidden$="[[!venue]]">
+            <div class="red" style$="width: {{_red}};">
+                <div id="red">0%</div>
+            </div>
+            <div class="blue" style$="width: {{_blue}};">
+                <div id="blue">0%</div>
+            </div>
+        </div>
+        <google-map
+                latitude="-22.8948793"
+                longitude="-47.3104534"
+                single-info-window
+                fit-to-markers
+                api-key="AIzaSyDjOkyDAMuncvQ0FGQSpu1bwCS008INq1c">
+
+            <template is="dom-repeat" items="[[venues]]">
+
+                <google-map-marker
+                    latitude="[[item.lat]]"
+                    longitude="[[item.lon]]"
+                    icon="[[_getIcon(item.bileto)]]"
+                    title="[[item.name]]">
+                    [[item.name]]
+                </google-map-marker>
+
+            </template>
+
+        </google-map>
+        <iron-ajax
+            id="ajax"
+            method="GET"
+            url="https://rawgit.com/ingressorapido/ingressorapido.github.io/master/jsons/war-venues.json"
+            timeout="120000" auto
+            last-response="{{venues}}"
+            loading="{{loading}}">
+        </iron-ajax>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'war-app',
+
+            _onVenuesChanged: function() {
+                var red = 0;
+                var blue = 0;
+
+                if (this.venues && this.venues.length) {
+                    this.venues.forEach(function (venue) {
+                        if (venue.bileto) {
+                            blue++;
+                        } else {
+                            red++;
+                        }
+                    });
+
+                    this._red = (red * 100 / this.venues.length) + '%';
+                    this._blue = (blue * 100 / this.venues.length) + '%';
+
+                    this.$.red.innerHTML = this._red;
+                    this.$.blue.innerHTML = this._blue;
+                }
+            },
+
+            properties: {
+                _red: {
+                    type: String,
+                    value: '0%'
+                },
+                _blue: {
+                    type: String,
+                    value: '0%'
+                },
+                venues: {
+                    type: Array,
+                    value: [],
+                    observer: '_onVenuesChanged'
+                }
+            },
+
+            _getIcon(bileto) {
+                return this.resolveUrl(bileto ? '../../like.png'
+                        : '../../dislike.png');
+            }
+        });
+    </script>
+</dom-module>

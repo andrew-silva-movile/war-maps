@@ -1,0 +1,6 @@
+{
+  "name": "war",
+  "short_name": "war",
+  "start_url": "/",
+  "display": "standalone"
+}
